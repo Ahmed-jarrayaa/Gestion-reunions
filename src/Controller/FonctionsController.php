@@ -97,4 +97,19 @@ class FonctionsController extends AppController
 
         return $this->redirect(['action' => 'index']);
     }
+
+    /**
+     * L'accès à la gestion des fonctions est réservé aux administrateurs.
+     */
+    public function beforeFilter(\Cake\Event\EventInterface $event)
+    {
+        parent::beforeFilter($event);
+
+        $user = $this->request->getAttribute('identity');
+        if (!$user || $user->role !== 'admin') {
+            $this->Flash->error('Accès non autorisé.');
+
+            return $this->redirect('/dashboard');
+        }
+    }
 }

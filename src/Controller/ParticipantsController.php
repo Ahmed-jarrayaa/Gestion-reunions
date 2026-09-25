@@ -55,6 +55,8 @@ protected $Notifications;
 
 public function add($idReunion = null)
 {
+    $user = $this->Authentication->getIdentity();
+
     $Planification = $this->fetchTable('Planification');
     $ParticipantsPlanifications = $this->fetchTable('ParticipantsPlanifications');
     $Reunions = $this->fetchTable('Reunions');
@@ -86,6 +88,8 @@ public function add($idReunion = null)
     if ($this->request->is('post')) {
         $data = $this->request->getData();
         $data['id_reunion'] = $idReunion;
+        $data['cree_par'] = $user->id;
+        $data['statut'] = 'en_attente';
         $planification = $Planification->patchEntity($planification, $data);
 
         if ($Planification->save($planification)) {
@@ -110,7 +114,12 @@ public function add($idReunion = null)
         'valueField' => 'email'
     ])->toArray();
 
-    $this->set(compact('planification', 'utilisateurs', 'selectedParticipants', 'idReunion'));
+    $types = $this->fetchTable('TypesReunions')->find('list', [
+        'keyField' => 'id',
+        'valueField' => 'nom_type'
+    ])->order(['nom_type' => 'ASC'])->toArray();
+
+    $this->set(compact('planification', 'utilisateurs', 'selectedParticipants', 'idReunion', 'types'));
 }
 
 

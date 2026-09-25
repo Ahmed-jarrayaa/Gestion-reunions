@@ -17,6 +17,13 @@ class ParticipantsPlanificationsController extends AppController
      */
     public function index()
     {
+        $user = $this->Authentication->getIdentity();
+        if (!$user || $user->role !== 'admin') {
+            $this->Flash->error('Accès non autorisé.');
+
+            return $this->redirect('/dashboard');
+        }
+
         $query = $this->ParticipantsPlanifications->find();
         $participantsPlanifications = $this->paginate($query);
 
@@ -32,6 +39,13 @@ class ParticipantsPlanificationsController extends AppController
      */
     public function view($id = null)
     {
+        $user = $this->Authentication->getIdentity();
+        if (!$user || $user->role !== 'admin') {
+            $this->Flash->error('Accès non autorisé.');
+
+            return $this->redirect('/dashboard');
+        }
+
         $participantsPlanification = $this->ParticipantsPlanifications->get($id, contain: []);
         $this->set(compact('participantsPlanification'));
     }
@@ -43,6 +57,13 @@ class ParticipantsPlanificationsController extends AppController
      */
     public function add()
     {
+        $user = $this->Authentication->getIdentity();
+        if (!$user || $user->role !== 'admin') {
+            $this->Flash->error('Accès non autorisé.');
+
+            return $this->redirect(['action' => 'index']);
+        }
+
         $participantsPlanification = $this->ParticipantsPlanifications->newEmptyEntity();
         if ($this->request->is('post')) {
             $participantsPlanification = $this->ParticipantsPlanifications->patchEntity($participantsPlanification, $this->request->getData());
@@ -65,6 +86,13 @@ class ParticipantsPlanificationsController extends AppController
      */
     public function edit($id = null)
     {
+        $user = $this->Authentication->getIdentity();
+        if (!$user || $user->role !== 'admin') {
+            $this->Flash->error('Accès non autorisé.');
+
+            return $this->redirect(['action' => 'index']);
+        }
+
         $participantsPlanification = $this->ParticipantsPlanifications->get($id, contain: []);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $participantsPlanification = $this->ParticipantsPlanifications->patchEntity($participantsPlanification, $this->request->getData());
@@ -88,6 +116,14 @@ class ParticipantsPlanificationsController extends AppController
     public function delete($id = null)
     {
         $this->request->allowMethod(['post', 'delete']);
+
+        $user = $this->Authentication->getIdentity();
+        if (!$user || $user->role !== 'admin') {
+            $this->Flash->error('Accès non autorisé.');
+
+            return $this->redirect(['action' => 'index']);
+        }
+
         $participantsPlanification = $this->ParticipantsPlanifications->get($id);
         if ($this->ParticipantsPlanifications->delete($participantsPlanification)) {
             $this->Flash->success(__('The participants planification has been deleted.'));

@@ -27,13 +27,14 @@ class Planification extends Entity
      * @var array<string, bool>
      */
     protected array $_accessible = [
+        'id' => false,
         'titre' => true,
-        '*' => true,
-    'id' => false,
         'date_planification' => true,
         'lieu' => true,
         'cree_par' => true,
         'id_type' => true,
+        'planifie_par' => true,
+        'statut' => true,
         'participants_planifications' => true // ✅ important
     ];
 }

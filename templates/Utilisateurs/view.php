@@ -4,41 +4,45 @@
  * @var \App\Model\Entity\Utilisateur $utilisateur
  */
 ?>
-<div class="row">
-    <aside class="column">
-        <div class="side-nav">
-            <h4 class="heading"><?= __('Actions') ?></h4>
-            <?= $this->Html->link(__('Edit Utilisateur'), ['action' => 'edit', $utilisateur->id], ['class' => 'side-nav-item']) ?>
-            <?= $this->Form->postLink(__('Delete Utilisateur'), ['action' => 'delete', $utilisateur->id], ['confirm' => __('Are you sure you want to delete # {0}?', $utilisateur->id), 'class' => 'side-nav-item']) ?>
-            <?= $this->Html->link(__('List Utilisateurs'), ['action' => 'index'], ['class' => 'side-nav-item']) ?>
-            <?= $this->Html->link(__('New Utilisateur'), ['action' => 'add'], ['class' => 'side-nav-item']) ?>
-        </div>
-    </aside>
-    <div class="column column-80">
-        <div class="utilisateurs view content">
-            <h3><?= h($utilisateur->nom) ?></h3>
-            <table>
-                <tr>
-                    <th><?= __('Nom') ?></th>
-                    <td><?= h($utilisateur->nom) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Email') ?></th>
-                    <td><?= h($utilisateur->email) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Role') ?></th>
-                    <td><?= h($utilisateur->role) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Mot De Passe') ?></th>
-                    <td><?= h($utilisateur->mot_de_passe) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Id') ?></th>
-                    <td><?= $this->Number->format($utilisateur->id) ?></td>
-                </tr>
-            </table>
+<div class="card" style="max-width:820px;">
+    <div class="card-header">
+        <h4 style="margin:0;">Utilisateur : <?= h($utilisateur->nom) ?></h4>
+    </div>
+    <div class="card-body">
+        <table>
+            <tr>
+                <th style="width:38%;">Nom</th>
+                <td><?= h($utilisateur->nom) ?></td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td><?= h($utilisateur->email) ?></td>
+            </tr>
+            <tr>
+                <th>Rôle</th>
+                <td>
+                    <?php if ($utilisateur->role === 'admin'): ?>
+                        <span class="badge" style="background-color:#dc3545; color:white;">Admin</span>
+                    <?php else: ?>
+                        <span class="badge" style="background-color:#17a2b8; color:white;">Membre</span>
+                    <?php endif; ?>
+                </td>
+            </tr>
+            <tr>
+                <th>Fonction</th>
+                <td><?= isset($utilisateur->fonction) && $utilisateur->fonction !== null ? h($utilisateur->fonction->nom) : '' ?></td>
+            </tr>
+        </table>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:18px;">
+            <?= $this->Html->link('&larr; Retour aux utilisateurs', ['action' => 'index'], ['escape' => false, 'class' => 'btn btn-light btn-sm']) ?>
+            <?php $user = $this->request->getAttribute('identity'); ?>
+            <?php if ($user && ($user->role === 'admin' || $user->id === $utilisateur->id)): ?>
+                <?= $this->Html->link('Modifier', ['action' => 'edit', $utilisateur->id], ['class' => 'btn btn-primary btn-sm']) ?>
+            <?php endif; ?>
+            <?php if ($user && $user->role === 'admin'): ?>
+                <?= $this->Form->postLink('Supprimer', ['action' => 'delete', $utilisateur->id], ['method' => 'delete', 'confirm' => 'Voulez-vous vraiment supprimer cet utilisateur ?', 'class' => 'btn btn-danger btn-sm']) ?>
+            <?php endif; ?>
         </div>
     </div>
 </div>

@@ -4,24 +4,21 @@
  * @var \App\Model\Entity\Fonction $fonction
  */
 ?>
-<div class="row">
-    <aside class="column">
-        <div class="side-nav">
-            <h4 class="heading"><?= __('Actions') ?></h4>
-            <?= $this->Html->link(__('List Fonctions'), ['action' => 'index'], ['class' => 'side-nav-item']) ?>
+<div class="card" style="max-width:620px;">
+    <div class="card-header">
+        <h4 style="margin:0;">Nouvelle fonction</h4>
+    </div>
+    <div class="card-body">
+        <?= $this->Form->create($fonction) ?>
+        <fieldset>
+            <?php
+                echo $this->Form->control('nom', ['label' => 'Nom']);
+            ?>
+        </fieldset>
+        <div style="display:flex; gap:10px; margin-top:16px;">
+            <?= $this->Form->button('Enregistrer', ['class' => 'btn btn-primary']) ?>
+            <?= $this->Html->link('Annuler', ['action' => 'index'], ['class' => 'btn btn-light']) ?>
         </div>
-    </aside>
-    <div class="column column-80">
-        <div class="fonctions form content">
-            <?= $this->Form->create($fonction) ?>
-            <fieldset>
-                <legend><?= __('Add Fonction') ?></legend>
-                <?php
-                    echo $this->Form->control('nom');
-                ?>
-            </fieldset>
-            <?= $this->Form->button(__('Submit')) ?>
-            <?= $this->Form->end() ?>
-        </div>
+        <?= $this->Form->end() ?>
     </div>
 </div>

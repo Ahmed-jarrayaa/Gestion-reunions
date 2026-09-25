@@ -1,53 +1,74 @@
-# CakePHP Application Skeleton
+# Gestion-réunions
 
-![Build Status](https://github.com/cakephp/app/actions/workflows/ci.yml/badge.svg?branch=5.x)
-[![Total Downloads](https://img.shields.io/packagist/dt/cakephp/app.svg?style=flat-square)](https://packagist.org/packages/cakephp/app)
-[![PHPStan](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg?style=flat-square)](https://github.com/phpstan/phpstan)
+Plateforme web de gestion des réunions développée avec CakePHP 5, permettant de
+planifier, organiser et suivre les réunions, de gérer les participants avec des
+notifications automatiques.
 
-A skeleton for creating applications with [CakePHP](https://cakephp.org) 5.x.
+## Fonctionnalités
 
-The framework source code can be found here: [cakephp/cakephp](https://github.com/cakephp/cakephp).
+- Authentification par email / mot de passe (inscription, connexion, déconnexion)
+- Création de réunions avec type, date, lieu et participants
+- Validation des réunions par un administrateur
+- Planification de réunions et gestion des participants planifiés
+- Calendrier (FullCalendar) des réunions
+- Notifications (session + rappels) pour les réunions à venir / annulées
+- Rôles : `admin` et `membre`
+
+## Prérequis
+
+- PHP >= 8.1 avec extensions `mbstring`, `intl`, `openssl`, `pdo_mysql`
+- MySQL / MariaDB
+- Composer
 
 ## Installation
 
-1. Download [Composer](https://getcomposer.org/doc/00-intro.md) or update `composer self-update`.
-2. Run `php composer.phar create-project --prefer-dist cakephp/app [app_name]`.
-
-If Composer is installed globally, run
+1. Installer les dépendances :
 
 ```bash
-composer create-project --prefer-dist cakephp/app
+composer install --no-dev --optimize-autoloader
 ```
 
-In case you want to use a custom app dir name (e.g. `/myapp/`):
+2. Copier et adapter la configuration locale :
 
 ```bash
-composer create-project --prefer-dist cakephp/app myapp
+cp config/app_local.example.php config/app_local.php
 ```
 
-You can now either use your machine's webserver to view the default home page, or start
-up the built-in webserver with:
+3. Configurer la base de données dans `config/app_local.php` (ou via la variable
+   d'environnement `DATABASE_URL`).
+
+4. Créer la base de données puis lancer les migrations :
+
+```bash
+bin/cake migrations migrate
+```
+
+5. Démarrer le serveur de développement :
 
 ```bash
 bin/cake server -p 8765
 ```
 
-Then visit `http://localhost:8765` to see the welcome page.
+Ou configurer Apache/Nginx pour pointer vers `webroot/`.
 
-## Update
+## Raccourcis de déploiement
 
-Since this skeleton is a starting point for your application and various files
-would have been modified as per your needs, there isn't a way to provide
-automated upgrades, so you have to do any updates manually.
+- Désactiver le mode debug : `DEBUG=false`
+- Définir une clé de sécurité forte : `SECURITY_SALT`
+- Vider le cache après déploiement : `bin/cake cache clear_all`
+- Programmer les rappels (cron) : `bin/cake reminders`
+- Notifications différées (cron) : `bin/cake send_reminders`
 
-## Configuration
+## Tests
 
-Read and edit the environment specific `config/app_local.php` and set up the
-`'Datasources'` and any other configuration relevant for your application.
-Other environment agnostic settings can be changed in `config/app.php`.
+```bash
+composer test
+composer cs-check
+```
 
-## Layout
+## Structure
 
-The app skeleton uses [Milligram](https://milligram.io/) (v1.3) minimalist CSS
-framework by default. You can, however, replace it with any other library or
-custom styles.
+- `src/Controller` — contrôleurs
+- `src/Model` — tables et entités
+- `templates` — vues
+- `config/Migrations` — migrations de base de données

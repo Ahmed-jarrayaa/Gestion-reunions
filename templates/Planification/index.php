@@ -3,62 +3,57 @@
  * @var \App\View\AppView $this
  * @var iterable<\App\Model\Entity\Planification> $planification
  */
+$user = $this->request->getAttribute('identity');
 ?>
-<div class="planification index content">
-    <?= $this->Html->link(__('New Planification'), ['action' => 'add'], ['class' => 'button float-right']) ?>
-    <h3><?= __('Planification') ?></h3>
+<div class="card" style="max-width:1100px;">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <h4 style="margin:0;">Planifications</h4>
+        <?php if ($user && $user->role === 'admin'): ?>
+            <a class="btn btn-primary btn-sm" href="<?= $this->Url->build(['action' => 'add']) ?>">+ Nouvelle planification</a>
+        <?php endif; ?>
+    </div>
     <div class="table-responsive">
         <table>
             <thead>
                 <tr>
-                    <th><?= $this->Paginator->sort('id') ?></th>
                     <th><?= $this->Paginator->sort('titre') ?></th>
-                    <th><?= $this->Paginator->sort('date_planification') ?></th>
+                    <th><?= $this->Paginator->sort('date_planification', 'Date planifiée') ?></th>
                     <th><?= $this->Paginator->sort('lieu') ?></th>
-                    <th><?= $this->Paginator->sort('cree_par') ?></th>
-                    <th><?= $this->Paginator->sort('id_type') ?></th>
-                    <th class="actions"><?= __('Actions') ?></th>
+                    <th><?= $this->Paginator->sort('statut') ?></th>
+                    <th class="actions">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($planification as $planification): ?>
+                <?php foreach ($planification as $item): ?>
                 <tr>
-                    <td><?= $this->Number->format($planification->id) ?></td>
-                    <td><?= h($planification->titre) ?></td>
-                    <td><?= h($planification->date_planification) ?></td>
-                    <td><?= h($planification->lieu) ?></td>
-                    <td><?= $this->Number->format($planification->cree_par) ?></td>
-                    <td><?= $this->Number->format($planification->id_type) ?></td>
+                    <td><?= h($item->titre) ?></td>
+                    <td><?= $item->date_planification ? h($item->date_planification->format('d/m/Y H:i')) : '' ?></td>
+                    <td><?= h($item->lieu) ?></td>
+                    <td>
+                        <?php if ($user && $user->id === $item->cree_par && $item->statut === 'en_attente'): ?>
+                            <span class="badge bg-warning">En attente</span>
+                        <?php elseif ($item->statut === 'accepte'): ?>
+                            <span class="badge bg-success">Acceptée</span>
+                        <?php elseif ($item->statut === 'refuse'): ?>
+                            <span class="badge bg-danger">Refusée</span>
+                        <?php else: ?>
+                            <span class="badge bg-warning">En attente</span>
+                        <?php endif; ?>
+                    </td>
                     <td class="actions">
-<?php
-$user = $this->request->getAttribute('identity'); // utilisateur connecté
-
-// Si le planificateur est le créateur et le statut est en attente
-if ($user->id === $planification->cree_par && $planification->statut === 'en_attente'): ?>
-    <?= $this->Html->link('Accepter', ['action' => 'accepter', $planification->id], ['class' => 'btn btn-success btn-sm']) ?>
-    <?= $this->Html->link('Refuser', ['action' => 'refuser', $planification->id], ['class' => 'btn btn-danger btn-sm']) ?>
-<?php else: ?>
-    <!-- Pour les autres utilisateurs, affichage du statut -->
-    <?php if ($planification->statut === 'accepte'): ?>
-        <span class="badge" style="background-color: #28a745; color: white;">Acceptée</span>
-    <?php elseif ($planification->statut === 'refuse'): ?>
-        <span class="badge" style="background-color: #dc3545; color: white;">Refusée</span>
-    <?php else: ?>
-        <span class="badge" style="background-color: #ffc107; color: black;">En attente</span>
-    <?php endif; ?>
-<?php endif; ?>
-
-
-                        <?= $this->Html->link(__('View'), ['action' => 'view', $planification->id]) ?>
-                        <?= $this->Html->link(__('Edit'), ['action' => 'edit', $planification->id]) ?>
-                        <?= $this->Form->postLink(
-                            __('Delete'),
-                            ['action' => 'delete', $planification->id],
-                            [
-                                'method' => 'delete',
-                                'confirm' => __('Are you sure you want to delete # {0}?', $planification->id),
-                            ]
-                        ) ?>
+                        <?= $this->Html->link('Voir', ['action' => 'view', $item->id], ['class' => 'btn btn-light btn-sm']) ?>
+                        <?php if ($user && $user->id === $item->cree_par && $item->statut === 'en_attente'): ?>
+                            <?= $this->Html->link('Accepter', ['action' => 'accepter', $item->id], ['class' => 'btn btn-success btn-sm']) ?>
+                            <?= $this->Html->link('Refuser', ['action' => 'refuser', $item->id], ['class' => 'btn btn-danger btn-sm']) ?>
+                        <?php endif; ?>
+                        <?php if ($user && $user->role === 'admin'): ?>
+                            <?= $this->Html->link('Modifier', ['action' => 'edit', $item->id], ['class' => 'btn btn-info btn-sm']) ?>
+                            <?= $this->Form->postLink(
+                                'Supprimer',
+                                ['action' => 'delete', $item->id],
+                                ['method' => 'delete', 'confirm' => 'Voulez-vous vraiment supprimer cette planification ?', 'class' => 'btn btn-danger btn-sm']
+                            ) ?>
+                        <?php endif; ?>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -67,12 +62,12 @@ if ($user->id === $planification->cree_par && $planification->statut === 'en_att
     </div>
     <div class="paginator">
         <ul class="pagination">
-            <?= $this->Paginator->first('<< ' . __('first')) ?>
-            <?= $this->Paginator->prev('< ' . __('previous')) ?>
+            <?= $this->Paginator->first('<< Premier') ?>
+            <?= $this->Paginator->prev('< Précédent') ?>
             <?= $this->Paginator->numbers() ?>
-            <?= $this->Paginator->next(__('next') . ' >') ?>
-            <?= $this->Paginator->last(__('last') . ' >>') ?>
+            <?= $this->Paginator->next('Suivant >') ?>
+            <?= $this->Paginator->last('Dernier >>') ?>
         </ul>
-        <p><?= $this->Paginator->counter(__('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')) ?></p>
+        <p><?= $this->Paginator->counter('Page {{page}} sur {{pages}}, {{current}} résultat(s) sur {{count}}') ?></p>
     </div>
 </div>

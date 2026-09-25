@@ -4,29 +4,22 @@
  * @var \App\Model\Entity\Fonction $fonction
  */
 ?>
-<div class="row">
-    <aside class="column">
-        <div class="side-nav">
-            <h4 class="heading"><?= __('Actions') ?></h4>
-            <?= $this->Form->postLink(
-                __('Delete'),
-                ['action' => 'delete', $fonction->id],
-                ['confirm' => __('Are you sure you want to delete # {0}?', $fonction->id), 'class' => 'side-nav-item']
-            ) ?>
-            <?= $this->Html->link(__('List Fonctions'), ['action' => 'index'], ['class' => 'side-nav-item']) ?>
+<div class="card" style="max-width:620px;">
+    <div class="card-header">
+        <h4 style="margin:0;">Modifier une fonction</h4>
+    </div>
+    <div class="card-body">
+        <?= $this->Form->create($fonction) ?>
+        <fieldset>
+            <?php
+                echo $this->Form->control('nom', ['label' => 'Nom']);
+            ?>
+        </fieldset>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
+            <?= $this->Form->button('Enregistrer', ['class' => 'btn btn-primary']) ?>
+            <?= $this->Form->postLink('Supprimer', ['action' => 'delete', $fonction->id], ['confirm' => 'Voulez-vous vraiment supprimer cette fonction ?', 'class' => 'btn btn-danger']) ?>
+            <?= $this->Html->link('Annuler', ['action' => 'index'], ['class' => 'btn btn-light']) ?>
         </div>
-    </aside>
-    <div class="column column-80">
-        <div class="fonctions form content">
-            <?= $this->Form->create($fonction) ?>
-            <fieldset>
-                <legend><?= __('Edit Fonction') ?></legend>
-                <?php
-                    echo $this->Form->control('nom');
-                ?>
-            </fieldset>
-            <?= $this->Form->button(__('Submit')) ?>
-            <?= $this->Form->end() ?>
-        </div>
+        <?= $this->Form->end() ?>
     </div>
 </div>

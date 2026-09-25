@@ -5,68 +5,56 @@
  */
 $user = $this->request->getAttribute('identity');
 $peutModifier = ($user && ($user->role === 'admin' || $user->id === $reunion->cree_par));
+$nomType = isset($reunion->type_reunion) ? h($reunion->type_reunion->nom_type) : (isset($reunion->types_reunion) ? h($reunion->types_reunion->nom_type) : '');
 ?>
-<div class="row">
-    <aside class="column">
-        <div class="side-nav">
-            <h4 class="heading"><?= __('Actions') ?></h4>
+<div class="card" style="max-width:820px;">
+    <div class="card-header">
+        <h4 style="margin:0;"><?= h($reunion->titre) ?></h4>
+        <span class="badge <?= $reunion->statut === 'valider' ? 'bg-success' : ($reunion->statut === 'en_attente' ? 'bg-warning' : 'bg-secondary') ?>">
+            <?= h($reunion->statut ?? '') ?>
+        </span>
+    </div>
 
-            <?php if ($peutModifier): ?>
-                <?= $this->Html->link(__('Edit Reunion'), ['action' => 'edit', $reunion->id], ['class' => 'side-nav-item']) ?>
-                <?= $this->Form->postLink(
-                    __('Delete Reunion'),
-                    ['action' => 'delete', $reunion->id],
-                    [
-                        'confirm' => __('Are you sure you want to delete # {0}?', $reunion->id),
-                        'class' => 'side-nav-item'
-                    ]
-                ) ?>
-            <?php endif; ?>
-            
+    <table class="table">
+        <tr>
+            <th style="width:38%;">Titre</th>
+            <td><?= h($reunion->titre) ?></td>
+        </tr>
+        <tr>
+            <th>Lieu</th>
+            <td><?= h($reunion->lieu) ?></td>
+        </tr>
+        <tr>
+            <th>Date et heure</th>
+            <td><?= $reunion->date_heure ? h($reunion->date_heure->format('d/m/Y H:i')) : '' ?></td>
+        </tr>
+        <tr>
+            <th>Type</th>
+            <td><?= $nomType ?></td>
+        </tr>
+        <tr>
+            <th>Statut</th>
+            <td><?= h($reunion->statut ?? '') ?></td>
+        </tr>
+    </table>
 
-            <?= $this->Html->link(__('List Reunions'), ['action' => 'index'], ['class' => 'side-nav-item']) ?>
-            <?= $this->Html->link(__('New Reunion'), ['action' => 'add'], ['class' => 'side-nav-item']) ?>
-        </div>
-    </aside>
-    <div class="column column-80">
-        <div class="reunions view content">
-            <h3><?= h($reunion->titre) ?></h3>
-            <table>
-                <tr>
-                    <th><?= __('Titre') ?></th>
-                    <td><?= h($reunion->titre) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Lieu') ?></th>
-                    <td><?= h($reunion->lieu) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Statut') ?></th>
-                    <td><?= h($reunion->statut) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Id') ?></th>
-                    <td><?= $this->Number->format($reunion->id) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Cree Par') ?></th>
-                    <td><?= $reunion->cree_par === null ? '' : $this->Number->format($reunion->cree_par) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Id Type') ?></th>
-                    <td><?= $reunion->id_type === null ? '' : $this->Number->format($reunion->id_type) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Date Heure') ?></th>
-                    <td><?= h($reunion->date_heure) ?></td>
-                </tr>
-            </table>
-            <div class="text">
-                <strong><?= __('Description') ?></strong>
-                <blockquote>
-                    <?= $this->Text->autoParagraph(h($reunion->description)); ?>
-                </blockquote>
-            </div>
-        </div>
+    <div class="text" style="margin:16px 0;">
+        <strong>Description</strong>
+        <?= $this->Text->autoParagraph(h($reunion->description)); ?>
+    </div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:18px;">
+        <a class="btn btn-light btn-sm" href="<?= $this->Url->build(['action' => 'index']) ?>">&larr; Retour aux réunions</a>
+        <?php if ($peutModifier): ?>
+            <a class="btn btn-primary btn-sm" href="<?= $this->Url->build(['action' => 'edit', $reunion->id]) ?>">Modifier</a>
+            <?= $this->Form->postLink(
+                'Supprimer',
+                ['action' => 'delete', $reunion->id],
+                [
+                    'confirm' => 'Voulez-vous vraiment supprimer cette réunion ?',
+                    'class' => 'btn btn-danger btn-sm'
+                ]
+            ) ?>
+        <?php endif; ?>
     </div>
 </div>

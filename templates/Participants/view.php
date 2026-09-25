@@ -4,37 +4,38 @@
  * @var \App\Model\Entity\Participant $participant
  */
 ?>
-<div class="row">
-    <aside class="column">
-        <div class="side-nav">
-            <h4 class="heading"><?= __('Actions') ?></h4>
-            <?= $this->Html->link(__('Edit Participant'), ['action' => 'edit', $participant->id], ['class' => 'side-nav-item']) ?>
-            <?= $this->Form->postLink(__('Delete Participant'), ['action' => 'delete', $participant->id], ['confirm' => __('Are you sure you want to delete # {0}?', $participant->id), 'class' => 'side-nav-item']) ?>
-            <?= $this->Html->link(__('List Participants'), ['action' => 'index'], ['class' => 'side-nav-item']) ?>
-            <?= $this->Html->link(__('New Participant'), ['action' => 'add'], ['class' => 'side-nav-item']) ?>
-        </div>
-    </aside>
-    <div class="column column-80">
-        <div class="participants view content">
-            <h3><?= h($participant->id) ?></h3>
-            <table>
-                <tr>
-                    <th><?= __('Presence') ?></th>
-                    <td><?= h($participant->presence) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Id') ?></th>
-                    <td><?= $this->Number->format($participant->id) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Id Reunion') ?></th>
-                    <td><?= $participant->id_reunion === null ? '' : $this->Number->format($participant->id_reunion) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Id Utilisateur') ?></th>
-                    <td><?= $participant->id_utilisateur === null ? '' : $this->Number->format($participant->id_utilisateur) ?></td>
-                </tr>
-            </table>
+<div class="card" style="max-width:820px;">
+    <div class="card-header">
+        <h4 style="margin:0;">Participation #<?= $this->Number->format($participant->id) ?></h4>
+    </div>
+    <div class="card-body">
+        <table>
+            <tr>
+                <th style="width:38%;">Réunion</th>
+                <td><?= $participant->reunion === null ? '' : h($participant->reunion->titre) ?></td>
+            </tr>
+            <tr>
+                <th>Utilisateur</th>
+                <td><?= $participant->utilisateur === null ? '' : h($participant->utilisateur->email) ?></td>
+            </tr>
+            <tr>
+                <th>Présence</th>
+                <td><?= h($participant->presence) ?></td>
+            </tr>
+            <tr>
+                <th>Id réunion</th>
+                <td><?= $participant->id_reunion === null ? '' : $this->Number->format($participant->id_reunion) ?></td>
+            </tr>
+            <tr>
+                <th>Id utilisateur</th>
+                <td><?= $participant->id_utilisateur === null ? '' : $this->Number->format($participant->id_utilisateur) ?></td>
+            </tr>
+        </table>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:18px;">
+            <?= $this->Html->link('&larr; Retour aux participants', ['action' => 'index'], ['escape' => false, 'class' => 'btn btn-light btn-sm']) ?>
+            <?= $this->Html->link('Modifier', ['action' => 'edit', $participant->id], ['class' => 'btn btn-primary btn-sm']) ?>
+            <?= $this->Form->postLink('Supprimer', ['action' => 'delete', $participant->id], ['method' => 'delete', 'confirm' => 'Voulez-vous vraiment supprimer cette participation ?', 'class' => 'btn btn-danger btn-sm']) ?>
         </div>
     </div>
 </div>

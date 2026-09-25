@@ -4,31 +4,45 @@ declare(strict_types=1);
 namespace App\Model\Entity;
 
 use Cake\ORM\Entity;
-use Authentication\PasswordHasher\DefaultPasswordHasher;
 
+/**
+ * Utilisateur Entity
+ *
+ * @property int $id
+ * @property string $nom
+ * @property string $email
+ * @property string|null $role
+ * @property string $mot_de_passe
+ * @property int|null $fonction_id
+ * @property \App\Model\Entity\Reunion[] $reunions
+ */
 class Utilisateur extends Entity
 {
-    // DOIT être typé array pour correspondre à Cake\ORM\Entity
-protected array $_accessible = [
-        '*' => true, // permet de patcher tous les champs
+    /**
+     * Champs pouvant être assignés en masse.
+     *
+     * Note : `role` est volontairement exclus de l'assignation de masse afin
+     * d'empêcher une élévation de privilège. Le rôle est défini uniquement par
+     * le code (inscription -> 'membre', administration -> contrôleur).
+     *
+     * @var array<string, bool>
+     */
+    protected array $_accessible = [
         'id' => false,
-    ];
-
-    // DOIT être typé array
-    protected array $_hidden = [
-        'mot_de_pass',
+        'nom' => true,
+        'prenom' => true,
+        'email' => true,
+        'mot_de_passe' => true,
+        'fonction_id' => true,
+        'role' => false,
     ];
 
     /**
-     * S’appelle automatiquement quand on assigne $entity->mot_de_pass
-     * Le nom du setter DOIT correspondre au champ : mot_de_pass -> _setMotDePass
+     * Champs masqués lors de l'export JSON / sérialisation.
+     *
+     * @var array<string>
      */
-    protected function _setMotDePass(string $password): ?string
-{
-    if (strlen($password) > 0) {
-        return (new DefaultPasswordHasher())->hash($password);
-    }
-    return null;
-}
-
+    protected array $_hidden = [
+        'mot_de_passe',
+    ];
 }

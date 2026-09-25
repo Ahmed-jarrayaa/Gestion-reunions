@@ -4,36 +4,26 @@
  * @var \App\Model\Entity\Reunion $reunion
  */
 ?>
-<div class="row">
-    <aside class="column">
-        <div class="side-nav">
-            <h4 class="heading"><?= __('Actions') ?></h4>
+<div class="card" style="max-width:680px;">
+    <div class="card-header"><h4 style="margin:0;">Modifier la réunion</h4></div>
+    <div class="card-body">
+        <?= $this->Form->create($reunion, ['class' => 'form']) ?>
+        <?= $this->Form->control('titre', ['label' => 'Titre']) ?>
+        <?= $this->Form->control('description', ['label' => 'Description']) ?>
+        <?= $this->Form->control('date_heure', ['label' => 'Date & heure']) ?>
+        <?= $this->Form->control('lieu', ['label' => 'Lieu']) ?>
+        <?= $this->Form->control('statut', ['label' => 'Statut']) ?>
+        <?= $this->Form->control('id_type', ['label' => 'Type de réunion']) ?>
+
+        <div style="display:flex; gap:10px; margin-top:18px;">
+            <?= $this->Form->button('Enregistrer', ['class' => 'btn btn-primary']) ?>
+            <a class="btn btn-light" href="<?= $this->Url->build(['action' => 'index']) ?>">Annuler</a>
             <?= $this->Form->postLink(
-                __('Supprimer'),
+                'Supprimer',
                 ['action' => 'delete', $reunion->id],
-                ['confirm' => __('Êtes-vous sûr de vouloir supprimer la réunion #{0} ?', $reunion->id), 'class' => 'side-nav-item']
+                ['confirm' => 'Êtes-vous sûr de vouloir supprimer cette réunion ?', 'class' => 'btn btn-danger']
             ) ?>
-            <?= $this->Html->link(__('Liste des Réunions'), ['action' => 'index'], ['class' => 'side-nav-item']) ?>
         </div>
-    </aside>
-    <div class="column column-80">
-        <div class="reunions form content">
-            <?= $this->Form->create($reunion) ?>
-            <fieldset>
-                <legend><?= __('Modifier la Réunion') ?></legend>
-                <?php
-                    echo $this->Form->control('titre');
-                    echo $this->Form->control('description');
-                    echo $this->Form->control('date_heure');
-                    echo $this->Form->control('lieu');
-                    echo $this->Form->control('statut');
-                    // Ne pas permettre de modifier le créateur :
-                    // echo $this->Form->control('cree_par');
-                    echo $this->Form->control('id_type', ['label' => 'Type de Réunion']);
-                ?>
-            </fieldset>
-            <?= $this->Form->button(__('Enregistrer')) ?>
-            <?= $this->Form->end() ?>
-        </div>
+        <?= $this->Form->end() ?>
     </div>
 </div>

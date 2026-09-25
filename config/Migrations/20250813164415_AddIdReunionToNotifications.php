@@ -1,25 +1,51 @@
 <?php
 declare(strict_types=1);
 
-use Migrations\BaseMigration;
+use Migrations\AbstractMigration;
 
-class AddIdReunionToNotifications extends BaseMigration
+class AddIdReunionToNotifications extends AbstractMigration
 {
-    /**
-     * Change Method.
-     *
-     * More information on this method is available here:
-     * https://book.cakephp.org/migrations/4/en/migrations.html#the-change-method
-     * @return void
-     */
     public function change(): void
     {
-        $table = $this->table('notifications');
-        $table->addColumn('id_reunion', 'integer', [
-            'default' => null,
-            'limit' => 11,
-            'null' => false,
-        ]);
-        $table->update();
+        $table = $this->table('notifications', ['id' => false, 'primary_key' => ['id']]);
+        $table
+            ->addColumn('id', 'biginteger', [
+                'autoIncrement' => true,
+                'signed' => false,
+            ])
+            ->addColumn('utilisateur_id', 'integer', [
+                'default' => null,
+                'limit' => 11,
+                'null' => true,
+            ])
+            ->addColumn('message', 'text', [
+                'default' => null,
+                'null' => true,
+            ])
+            ->addColumn('id_reunion', 'integer', [
+                'default' => null,
+                'limit' => 11,
+                'null' => true,
+            ])
+            ->addColumn('type', 'string', [
+                'default' => null,
+                'limit' => 50,
+                'null' => true,
+            ])
+            ->addColumn('lu', 'boolean', [
+                'default' => 0,
+                'null' => false,
+            ])
+            ->addColumn('supprime', 'boolean', [
+                'default' => 0,
+                'null' => false,
+            ])
+            ->addColumn('created', 'datetime', [
+                'default' => null,
+                'null' => true,
+            ])
+            ->addIndex(['utilisateur_id'])
+            ->addIndex(['id_reunion'])
+            ->create();
     }
 }

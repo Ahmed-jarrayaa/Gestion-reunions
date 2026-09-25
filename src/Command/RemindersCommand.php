@@ -1,11 +1,14 @@
+<?php
+declare(strict_types=1);
+
 namespace App\Command;
 
+use Cake\Command\Command;
 use Cake\Console\Arguments;
-use Cake\Console\Command;
 use Cake\Console\ConsoleIo;
 use Cake\Mailer\Mailer;
 
-class ReminderCommand extends Command
+class RemindersCommand extends Command
 {
     public function execute(Arguments $args, ConsoleIo $io)
     {
@@ -17,21 +20,32 @@ class ReminderCommand extends Command
             ->contain('Participants.Utilisateurs')
             ->where([
                 'Reunions.date_heure >=' => $aujourdHui,
-                'Reunions.date_heure <=' => $dans10Jours
+                'Reunions.date_heure <=' => $dans10Jours,
+                'Reunions.statut' => 'valider',
             ])
             ->all();
 
+        $envoyes = 0;
         foreach ($reunions as $reunion) {
             foreach ($reunion->participants as $p) {
-                // envoyer un email (ou autre canal)
+                $email = $p->utilisateur->email ?? null;
+                $nom = $p->utilisateur->nom ?? 'participant';
+                if (!$email) {
+                    continue;
+                }
                 $mailer = new Mailer('default');
-                $mailer->setTo($p->utilisateur->email)
+                $mailer->setTo($email)
                     ->setSubject("Rappel : réunion à venir")
-                    ->deliver("La réunion '{$reunion->titre}' est prévue le " 
-                              . $reunion->date_heure->format('d/m/Y H:i'));
+                    ->deliver(
+                        "Bonjour {$nom},\n" .
+                        "La réunion '{$reunion->titre}' est prévue le " .
+                        $reunion->date_heure->format('d/m/Y H:i') . ".\n" .
+                        "Lieu : {$reunion->lieu}\nMerci."
+                    );
+                $envoyes++;
             }
         }
 
-        $io->out("Notifications envoyées pour les réunions dans 10 jours.");
+        $io->out("Rappels envoyés pour {$envoyes} participant(s) aux réunions dans les 10 prochains jours.");
     }
 }

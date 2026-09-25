@@ -1,20 +1,25 @@
 <?php
 declare(strict_types=1);
 
-use Migrations\BaseMigration;
+use Migrations\AbstractMigration;
 
-class AddSendAtToNotifications extends BaseMigration
+class AddSendAtToNotifications extends AbstractMigration
 {
-    /**
-     * Change Method.
-     *
-     * More information on this method is available here:
-     * https://book.cakephp.org/migrations/4/en/migrations.html#the-change-method
-     * @return void
-     */
     public function change(): void
     {
         $table = $this->table('notifications');
-        $table->update();
+        if ($table->exists()) {
+            $columns = $this->getAdapter()->getColumns('notifications');
+            $hasSendAt = false;
+            foreach ($columns as $column) {
+                if ($column->getName() === 'send_at') {
+                    $hasSendAt = true;
+                    break;
+                }
+            }
+            if (!$hasSendAt) {
+                $table->addColumn('send_at', 'datetime', ['null' => true])->update();
+            }
+        }
     }
 }

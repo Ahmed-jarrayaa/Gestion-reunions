@@ -4,31 +4,24 @@
  * @var \App\Model\Entity\Participant $participant
  */
 ?>
-<div class="row">
-    <aside class="column">
-        <div class="side-nav">
-            <h4 class="heading"><?= __('Actions') ?></h4>
-            <?= $this->Form->postLink(
-                __('Delete'),
-                ['action' => 'delete', $participant->id],
-                ['confirm' => __('Are you sure you want to delete # {0}?', $participant->id), 'class' => 'side-nav-item']
-            ) ?>
-            <?= $this->Html->link(__('List Participants'), ['action' => 'index'], ['class' => 'side-nav-item']) ?>
+<div class="card" style="max-width:620px;">
+    <div class="card-header">
+        <h4 style="margin:0;">Modifier une participation</h4>
+    </div>
+    <div class="card-body">
+        <?= $this->Form->create($participant) ?>
+        <fieldset>
+            <?php
+                echo $this->Form->control('id_reunion', ['label' => 'Réunion', 'options' => $reunions]);
+                echo $this->Form->control('id_utilisateur', ['label' => 'Utilisateur', 'options' => $utilisateurs]);
+                echo $this->Form->control('presence', ['label' => 'Présence']);
+            ?>
+        </fieldset>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
+            <?= $this->Form->button('Enregistrer', ['class' => 'btn btn-primary']) ?>
+            <?= $this->Form->postLink('Supprimer', ['action' => 'delete', $participant->id], ['method' => 'delete', 'confirm' => 'Voulez-vous vraiment supprimer cette participation ?', 'class' => 'btn btn-danger']) ?>
+            <?= $this->Html->link('Annuler', ['action' => 'index'], ['class' => 'btn btn-light']) ?>
         </div>
-    </aside>
-    <div class="column column-80">
-        <div class="participants form content">
-            <?= $this->Form->create($participant) ?>
-            <fieldset>
-                <legend><?= __('Edit Participant') ?></legend>
-                <?php
-                    echo $this->Form->control('id_reunion');
-                    echo $this->Form->control('id_utilisateur');
-                    echo $this->Form->control('presence');
-                ?>
-            </fieldset>
-            <?= $this->Form->button(__('Submit')) ?>
-            <?= $this->Form->end() ?>
-        </div>
+        <?= $this->Form->end() ?>
     </div>
 </div>

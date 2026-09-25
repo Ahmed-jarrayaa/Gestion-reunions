@@ -4,16 +4,18 @@
  * @var iterable<\App\Model\Entity\Fonction> $fonctions
  */
 ?>
-<div class="fonctions index content">
-    <?= $this->Html->link(__('New Fonction'), ['action' => 'add'], ['class' => 'button float-right']) ?>
-    <h3><?= __('Fonctions') ?></h3>
+<div class="card" style="max-width:1000px;">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <h4 style="margin:0;">Fonctions</h4>
+        <a class="btn btn-primary btn-sm" href="<?= $this->Url->build(['action' => 'add']) ?>">+ Nouvelle fonction</a>
+    </div>
     <div class="table-responsive">
         <table>
             <thead>
                 <tr>
                     <th><?= $this->Paginator->sort('id') ?></th>
                     <th><?= $this->Paginator->sort('nom') ?></th>
-                    <th class="actions"><?= __('Actions') ?></th>
+                    <th class="actions">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -22,16 +24,9 @@
                     <td><?= $this->Number->format($fonction->id) ?></td>
                     <td><?= h($fonction->nom) ?></td>
                     <td class="actions">
-                        <?= $this->Html->link(__('View'), ['action' => 'view', $fonction->id]) ?>
-                        <?= $this->Html->link(__('Edit'), ['action' => 'edit', $fonction->id]) ?>
-                        <?= $this->Form->postLink(
-                            __('Delete'),
-                            ['action' => 'delete', $fonction->id],
-                            [
-                                'method' => 'delete',
-                                'confirm' => __('Are you sure you want to delete # {0}?', $fonction->id),
-                            ]
-                        ) ?>
+                        <?= $this->Html->link('Voir', ['action' => 'view', $fonction->id], ['class' => 'btn btn-light btn-sm']) ?>
+                        <?= $this->Html->link('Modifier', ['action' => 'edit', $fonction->id], ['class' => 'btn btn-info btn-sm']) ?>
+                        <?= $this->Form->postLink('Supprimer', ['action' => 'delete', $fonction->id], ['method' => 'delete', 'confirm' => 'Voulez-vous vraiment supprimer cette entrée ?', 'class' => 'btn btn-danger btn-sm']) ?>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -40,12 +35,12 @@
     </div>
     <div class="paginator">
         <ul class="pagination">
-            <?= $this->Paginator->first('<< ' . __('first')) ?>
-            <?= $this->Paginator->prev('< ' . __('previous')) ?>
+            <?= $this->Paginator->first('<< Premier') ?>
+            <?= $this->Paginator->prev('< Précédent') ?>
             <?= $this->Paginator->numbers() ?>
-            <?= $this->Paginator->next(__('next') . ' >') ?>
-            <?= $this->Paginator->last(__('last') . ' >>') ?>
+            <?= $this->Paginator->next('Suivant >') ?>
+            <?= $this->Paginator->last('Dernier >>') ?>
         </ul>
-        <p><?= $this->Paginator->counter(__('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')) ?></p>
+        <p><?= $this->Paginator->counter('Page {{page}} sur {{pages}}, {{current}} résultat(s) sur {{count}}') ?></p>
     </div>
 </div>

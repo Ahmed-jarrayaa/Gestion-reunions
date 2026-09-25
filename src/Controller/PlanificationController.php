@@ -333,17 +333,31 @@ public function accepter($id)
 
     if ($Reunions->save($reunion)) {
          // Ajouter le créateur de la planification comme participant
-    $creator = $Participants->newEmptyEntity();
-    $creator->id_reunion = $reunion->id;
-    $creator->id_utilisateur = $planif->cree_par;
-    $creator->presence = 0;
-    $Participants->save($creator);
+    $existe = $Participants->find()
+        ->where(['id_reunion' => $reunion->id, 'id_utilisateur' => $planif->cree_par])
+        ->first();
+    if (!$existe) {
+        $creator = $Participants->newEmptyEntity();
+        $creator->id_reunion = $reunion->id;
+        $creator->id_utilisateur = $planif->cree_par;
+        $creator->presence = 'en_attente';
+        $Participants->save($creator);
+    }
         // Ajouter tous les participants de la planification
         foreach ($planif->participants_planifications as $pp) {
+            if ((string)$pp->id_utilisateur === (string)$planif->cree_par) {
+                continue;
+            }
+            $existe = $Participants->find()
+                ->where(['id_reunion' => $reunion->id, 'id_utilisateur' => $pp->id_utilisateur])
+                ->first();
+            if ($existe) {
+                continue;
+            }
             $participant = $Participants->newEmptyEntity();
             $participant->id_reunion = $reunion->id;
             $participant->id_utilisateur = $pp->id_utilisateur;
-            $participant->presence = 0;
+            $participant->presence = 'en_attente';
             $Participants->save($participant);
         }
 

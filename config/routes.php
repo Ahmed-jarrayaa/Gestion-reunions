@@ -22,17 +22,18 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/inscription', ['controller' => 'Utilisateurs', 'action' => 'add']);
         $builder->connect('/mon-compte', ['controller' => 'Utilisateurs', 'action' => 'view']);
 
-        // Route personnalisée pour /dashboard vers UtilisateursController::dashboard
+        // Tableau de bord personnel
         $builder->connect('/dashboard', ['controller' => 'Utilisateurs', 'action' => 'dashboard']);
-
-        // Route pour le dashboard (tableau de bord) du DashboardController (si besoin)
-        $builder->connect('/dashboard', [
-            'controller' => 'Dashboard', 
-            'action' => 'index'
-        ]);
 
         // Pages statiques
         $builder->connect('/pages/*', ['controller' => 'Pages', 'action' => 'display']);
+
+        // Routes fonctionnelles explicites (doivent être déclarées avant fallbacks)
+        $builder->connect('/calendrier', ['controller' => 'Reunions', 'action' => 'calendrier']);
+        $builder->connect('/reunions/events', ['controller' => 'Reunions', 'action' => 'events']);
+        $builder->connect('/reunions/mark-all-read', ['controller' => 'Reunions', 'action' => 'markAllRead']);
+        $builder->connect('/planification/accepter/*', ['controller' => 'Planification', 'action' => 'accepter']);
+        $builder->connect('/planification/refuser/*', ['controller' => 'Planification', 'action' => 'refuser']);
 
         $builder->fallbacks(DashedRoute::class);
     });
@@ -43,29 +44,4 @@ return function (RouteBuilder $routes): void {
             $builder->connect('/info', ['controller' => 'Pages', 'action' => 'display', 'info']);
         });
     }
-
-    // Zone administrateur
-    $routes->prefix('Admin', function (RouteBuilder $builder) {
-        $builder->connect('/', ['controller' => 'Dashboard', 'action' => 'admin']);
-        $builder->fallbacks(DashedRoute::class);
-    });
-
-    // API REST
-    $routes->scope('/api', function (RouteBuilder $builder) {
-        $builder->setExtensions(['json']);
-        $builder->resources('Utilisateurs');
-        $builder->connect('/dashboard', [
-            'controller' => 'Dashboard',
-            'action' => 'index'
-        ]);
-    });
-
-
-$routes->connect('/calendrier', ['controller' => 'Reunions', 'action' => 'calendrier']);
-$routes->connect('/reunions/events', ['controller' => 'Reunions', 'action' => 'events']);
-$routes->connect('/reunions/markAllRead', ['controller' => 'Reunions', 'action' => 'markAllRead']);
-$routes->connect('/planification/approve/*', ['controller' => 'Planification', 'action' => 'approve'], ['_method' => 'POST']);
-$routes->connect('/planification/reject/*',  ['controller' => 'Planification', 'action' => 'reject'],  ['_method' => 'POST']);
-
-
 };

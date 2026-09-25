@@ -77,6 +77,11 @@ $this->belongsToMany('Planification', [
             ->notEmptyString('nom');
 
         $validator
+            ->scalar('prenom')
+            ->maxLength('prenom', 100)
+            ->allowEmptyString('prenom');
+
+        $validator
             ->email('email')
             ->requirePresence('email', 'create')
             ->notEmptyString('email')
@@ -84,11 +89,13 @@ $this->belongsToMany('Planification', [
 
         $validator
             ->scalar('role')
+            ->inList('role', ['admin', 'membre'])
             ->allowEmptyString('role');
 
         $validator
             ->scalar('mot_de_passe')
             ->maxLength('mot_de_passe', 255)
+            ->minLength('mot_de_passe', 6)
             ->requirePresence('mot_de_passe', 'create')
             ->notEmptyString('mot_de_passe');
 

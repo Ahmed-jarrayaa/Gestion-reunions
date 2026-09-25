@@ -247,12 +247,12 @@ public function index()
 
         // 🔎 Filtre recherche
         if (!empty($search)) {
-            $query->where([
-                'OR' => [
-                    'Reunions.titre LIKE' => '%' . $search . '%',
-                    'Reunions.id' => (is_numeric($search) ? (int)$search : null)
-                ]
-            ]);
+            $conditions = ['Reunions.titre LIKE' => '%' . $search . '%'];
+            if (is_numeric($search)) {
+                $conditions['Reunions.id'] = (int)$search;
+            }
+
+            $query->where(['OR' => $conditions]);
         }
 
         $reunions = $this->paginate($query);
@@ -273,19 +273,19 @@ public function index()
             ->where([
                 'OR' => [
                     'Reunions.cree_par' => $user->id,
-                    'Reunions.id IN' => $participantReunionIds
+                    ...(!empty($participantReunionIds) ? ['Reunions.id IN' => $participantReunionIds] : []),
                 ]
             ])
             ->distinct(['Reunions.id']);
 
         // 🔎 Filtre recherche
         if (!empty($search)) {
-            $query->where([
-                'OR' => [
-                    'Reunions.titre LIKE' => '%' . $search . '%',
-                    'Reunions.id' => (is_numeric($search) ? (int)$search : null)
-                ]
-            ]);
+            $conditions = ['Reunions.titre LIKE' => '%' . $search . '%'];
+            if (is_numeric($search)) {
+                $conditions['Reunions.id'] = (int)$search;
+            }
+
+            $query->where(['OR' => $conditions]);
         }
 
         $reunions = $this->paginate($query);
@@ -325,18 +325,25 @@ public function add()
             $creator = $Participants->newEmptyEntity();
             $creator->id_reunion = $reunion->id;
             $creator->id_utilisateur = $user->id;
-            $creator->presence = 0;
+            $creator->presence = 'en_attente';
             $Participants->save($creator);
 
             // 🔹 Ajouter les participants sélectionnés
             $participants = $this->request->getData('participants_ids') ?? [];
             foreach ($participants as $pid) {
                 // éviter de dupliquer le créateur
-                if ($pid != $user->id) {
+                if ((string)$pid !== (string)$user->id) {
+                    $existe = $Participants->find()
+                        ->where(['id_reunion' => $reunion->id, 'id_utilisateur' => $pid])
+                        ->first();
+                    if ($existe) {
+                        continue;
+                    }
+
                     $participant = $Participants->newEmptyEntity();
                     $participant->id_reunion = $reunion->id;
                     $participant->id_utilisateur = $pid;
-                    $participant->presence = 0;
+                    $participant->presence = 'en_attente';
                     $Participants->save($participant);
                 }
             }
@@ -419,50 +426,36 @@ public function delete($id = null)
 {
     $this->request->allowMethod(['post', 'delete']);
 
-    $reunion = $this->Reunions->get($id, [
-        'contain' => ['Participants' => ['Utilisateurs']]
-    ]);
-
     $user = $this->request->getAttribute('identity');
-    $reunion = $this->Reunions->get($id, ['contain' => ['Participants']]);
+    if (!$user) {
+        return $this->redirect(['action' => 'index']);
+    }
 
+    $reunion = $this->Reunions->get($id, ['contain' => ['Participants' => ['Utilisateurs']]]);
 
     // Vérification d'accès : admin ou créateur
-    if ($user->role !== 'admin') {
+    if ($user->role !== 'admin' && (int)$reunion->cree_par !== (int)$user->id) {
         $this->Flash->error("Vous n'avez pas le droit de supprimer cette réunion.");
         return $this->redirect(['action' => 'index']);
     }
 
-    // Préparer les notifications avant suppression
-    $notifications = $this->notifyParticipantsAnnulation(
-        $reunion->id,
-        $reunion->titre,
-        $reunion->date_heure->format('d/m/Y H:i')
-    );
-    
     $annulationNotifications = [];
-foreach ($reunion->participants as $participant) {
-    if ($participant->id_utilisateur) {
-        
-        $annulationNotifications[] = [
-            'message' => "La réunion '{$reunion->titre}' a été annulée (prévue le ".$reunion->date_heure->format('d/m/Y H:i').")",
-            'send_at' => date('Y-m-d H:i:s'),
-            'id_reunion' => $reunion->id,        // 0 pour réunion annulée
-            'annulee' => true         // flag pour JS
-        ];
+    foreach ($reunion->participants as $participant) {
+        if ($participant->id_utilisateur) {
+            $annulationNotifications[] = [
+                'message' => "La réunion '{$reunion->titre}' a été annulée (prévue le ".$reunion->date_heure->format('d/m/Y H:i').")",
+                'send_at' => date('Y-m-d H:i:s'),
+                'id_reunion' => $reunion->id,
+                'annulee' => true,
+            ];
+        }
     }
-}
 
-
-$this->request->getSession()->write('notifications.annulation', $annulationNotifications);
-
-
-    // Supprimer la réunion
     if ($this->Reunions->delete($reunion)) {
         $this->Flash->success("La réunion a été supprimée.");
-
-        // Stocker les notifications d'annulation pour le front
-        $this->request->getSession()->write('notifications.annulation', $notifications);
+        if (!empty($annulationNotifications)) {
+            $this->request->getSession()->write('notifications.annulation', $annulationNotifications);
+        }
     } else {
         $this->Flash->error("Impossible de supprimer la réunion.");
     }
@@ -535,11 +528,17 @@ public function addMultiple($reunionId = null)
         if (!empty($data['utilisateurs'])) {
             $participantsEntities = [];
             foreach ($data['utilisateurs'] as $userId) {
-                // Créer le participant
+                $existe = $this->Reunions->Participants->find()
+                    ->where(['id_reunion' => $reunionId, 'id_utilisateur' => $userId])
+                    ->first();
+                if ($existe) {
+                    continue;
+                }
+
                 $participant = $this->Reunions->Participants->newEmptyEntity();
                 $participant->id_reunion = $reunionId;
                 $participant->id_utilisateur = $userId;
-                $participant->presence = 0;
+                $participant->presence = 'en_attente';
                 $participantsEntities[] = $participant;
             }
 
@@ -740,11 +739,26 @@ public function events()
     $this->request->allowMethod(['get']);
     $this->autoRender = false;
 
-    $reunions = $this->Reunions
+    $user = $this->Authentication->getIdentity();
+
+    $query = $this->Reunions
         ->find()
         ->select(['id', 'titre', 'date_heure', 'id_type'])
-        ->orderAsc('date_heure')
-        ->all();
+        ->orderAsc('date_heure');
+
+    // Un membre ne voit que ses propres réunions (créées ou en tant que participant)
+    if ($user && $user->role !== 'admin') {
+        $query->where([
+            'OR' => [
+                'Reunions.cree_par' => $user->id,
+                'Reunions.id IN' => $this->Reunions->Participants->find()
+                    ->select(['id_reunion'])
+                    ->where(['id_utilisateur' => $user->id]),
+            ],
+        ]);
+    }
+
+    $reunions = $query->all();
 
     $events = [];
     foreach ($reunions as $r) {
@@ -754,9 +768,6 @@ public function events()
             'start' => $r->date_heure ? $r->date_heure->format('c') : null,
             'color' => '#' . substr(md5((string)$r->id_type), 0, 6) // couleur basée sur le type
         ];
-        
-        
-
     }
 
     $this->response = $this->response
@@ -765,6 +776,7 @@ public function events()
 
     return $this->response;
 }
+
 public function valider($id, $action)
 {
     $user = $this->Authentication->getIdentity();
@@ -798,7 +810,7 @@ $session->write('notifications.accept', [[
                 $participant = $participantsTable->newEntity([
                     'id_reunion' => $reunion->id,
                     'id_utilisateur' => $reunion->cree_par,
-                    'presence' => 0
+                    'presence' => 'en_attente'
                 ]);
                 $participantsTable->save($participant);
             }
@@ -815,7 +827,7 @@ $session->write('notifications.accept', [[
                         $participant = $participantsTable->newEntity([
                             'id_reunion' => $reunion->id,
                             'id_utilisateur' => $idUser,
-                            'presence' => 0
+                            'presence' => 'en_attente'
                         ]);
                         $participantsTable->save($participant);
                     }
@@ -870,17 +882,27 @@ public function planifier($id)
     $planif->planifie_par = $user->id;
 
     if ($Planification->save($planif)) {
-        // ✅ Récupérer les participants cochés (stockés en JSON)
-        $participantsAttente = !empty($reunion->participants_attente) 
-            ? json_decode($reunion->participants_attente, true) 
-            : [];
+        // ✅ Récupérer les participants réels de la réunion
+        $participantsAttente = $Reunions->Participants->find()
+            ->select(['id_utilisateur'])
+            ->where(['id_reunion' => $reunion->id, 'id_utilisateur IS NOT' => null])
+            ->all()
+            ->extract('id_utilisateur')
+            ->toArray();
 
         // ✅ Ajouter chaque participant dans la planification
         foreach ($participantsAttente as $idUser) {
+            $existe = $ParticipantsPlanifications->find()
+                ->where(['id_planification' => $planif->id, 'id_utilisateur' => $idUser])
+                ->first();
+
+            if ($existe) {
+                continue;
+            }
+
             $pp = $ParticipantsPlanifications->newEntity([
                 'id_planification' => $planif->id,
                 'id_utilisateur' => $idUser,
-                'statut' => 'en_attente',
                 'presence' => 0
             ]);
             $ParticipantsPlanifications->save($pp);
@@ -910,35 +932,45 @@ public function accepter($id)
     $reunion->statut = 'valider';
     if ($reunionsTable->save($reunion)) {
 
-        // ✅ Ajouter le créateur
-        $participantCreateur = $participantsTable->newEntity([
-            'id_reunion' => $reunion->id,
-            'id_utilisateur' => $reunion->cree_par,
-            'statut' => 'valider',
-            'presence' => 0
-        ]);
-       
-        // Ajouter notification dans la clé 'notifications.accepte'
-        // Après avoir marqué la réunion comme acceptée
+        // ✅ Ajouter le créateur (si pas déjà participant)
+        $existe = $participantsTable->find()
+            ->where(['id_reunion' => $reunion->id, 'id_utilisateur' => $reunion->cree_par])
+            ->first();
 
+        if (!$existe) {
+            $participantCreateur = $participantsTable->newEntity([
+                'id_reunion' => $reunion->id,
+                'id_utilisateur' => $reunion->cree_par,
+                'statut' => 'valider',
+                'presence' => 'en_attente'
+            ]);
 
-
-        $participantsTable->save($participantCreateur);
+            $participantsTable->save($participantCreateur);
+        }
 
         // ✅ Ajouter les participants stockés en attente
         if (!empty($reunion->participants_attente)) {
             $ids = json_decode($reunion->participants_attente, true);
 
             foreach ($ids as $idUser) {
-                if ($idUser != $reunion->cree_par) {
-                    $participant = $participantsTable->newEntity([
-                        'id_reunion' => $reunion->id,
-                        'id_utilisateur' => $idUser,
-                        'statut' => 'valider',
-                        'presence' => 0
-                    ]);
-                    $participantsTable->save($participant);
+                if ($idUser == $reunion->cree_par) {
+                    continue;
                 }
+                $existe = $participantsTable->find()
+                    ->where(['id_reunion' => $reunion->id, 'id_utilisateur' => $idUser])
+                    ->first();
+
+                if ($existe) {
+                    continue;
+                }
+
+                $participant = $participantsTable->newEntity([
+                    'id_reunion' => $reunion->id,
+                    'id_utilisateur' => $idUser,
+                    'statut' => 'valider',
+                    'presence' => 'en_attente'
+                ]);
+                $participantsTable->save($participant);
             }
         }
      

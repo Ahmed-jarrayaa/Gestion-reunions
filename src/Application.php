@@ -33,6 +33,7 @@ use Authentication\AuthenticationServiceProviderInterface;
 use Authentication\Middleware\AuthenticationMiddleware;
 use Psr\Http\Message\ServerRequestInterface;
 use Authentication\Identifier\IdentifierInterface;
+use Cake\Log\Log;
 use Cake\Routing\Router;
 
 /**
@@ -77,8 +78,11 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             try {
                 return $handler->handle($request);
             } catch (\Cake\Datasource\Exception\RecordNotFoundException $e) {
+                Log::error($e->getMessage());
+
                 return new \Cake\Http\Response([
-                    'body' => 'Réunion introuvable'
+                    'status' => 404,
+                    'body' => 'Réunion introuvable',
                 ]);
             }
         });

@@ -4,31 +4,28 @@
  * @var \App\Model\Entity\ParticipantsPlanification $participantsPlanification
  */
 ?>
-<div class="row">
-    <aside class="column">
-        <div class="side-nav">
-            <h4 class="heading"><?= __('Actions') ?></h4>
+<div class="card" style="max-width:620px;">
+    <div class="card-header">
+        <h4 style="margin:0;">Modifier une participation planifiée</h4>
+    </div>
+    <div class="card-body">
+        <?= $this->Form->create($participantsPlanification) ?>
+        <fieldset>
+            <?php
+                echo $this->Form->control('id_planification', ['label' => 'Planification']);
+                echo $this->Form->control('id_utilisateur', ['label' => 'Utilisateur']);
+                echo $this->Form->control('presence', ['label' => 'Présence']);
+            ?>
+        </fieldset>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
+            <?= $this->Form->button('Enregistrer', ['class' => 'btn btn-primary']) ?>
             <?= $this->Form->postLink(
-                __('Delete'),
-                ['action' => 'delete', $participantsPlanifications->id],
-                ['confirm' => __('Are you sure you want to delete # {0}?', $participantsPlanifications->id), 'class' => 'side-nav-item']
+                'Supprimer',
+                ['action' => 'delete', $participantsPlanification->id],
+                ['method' => 'delete', 'confirm' => 'Voulez-vous vraiment supprimer cette participation planifiée ?', 'class' => 'btn btn-danger']
             ) ?>
-            <?= $this->Html->link(__('List Participants Planifications'), ['action' => 'index'], ['class' => 'side-nav-item']) ?>
+            <?= $this->Html->link('Annuler', ['action' => 'index'], ['class' => 'btn btn-light']) ?>
         </div>
-    </aside>
-    <div class="column column-80">
-        <div class="participantsPlanifications form content">
-            <?= $this->Form->create($participantsPlanifications) ?>
-            <fieldset>
-                <legend><?= __('Edit Participants Planification') ?></legend>
-                <?php
-                    echo $this->Form->control('id_planification');
-                    echo $this->Form->control('id_utilisateur');
-                    echo $this->Form->control('presence');
-                ?>
-            </fieldset>
-            <?= $this->Form->button(__('Submit')) ?>
-            <?= $this->Form->end() ?>
-        </div>
+        <?= $this->Form->end() ?>
     </div>
 </div>

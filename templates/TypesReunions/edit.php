@@ -4,30 +4,23 @@
  * @var \App\Model\Entity\TypesReunion $typesReunion
  */
 ?>
-<div class="row">
-    <aside class="column">
-        <div class="side-nav">
-            <h4 class="heading"><?= __('Actions') ?></h4>
-            <?= $this->Form->postLink(
-                __('Delete'),
-                ['action' => 'delete', $typesReunion->id],
-                ['confirm' => __('Are you sure you want to delete # {0}?', $typesReunion->id), 'class' => 'side-nav-item']
-            ) ?>
-            <?= $this->Html->link(__('List Types Reunions'), ['action' => 'index'], ['class' => 'side-nav-item']) ?>
+<div class="card" style="max-width:620px;">
+    <div class="card-header">
+        <h4 style="margin:0;">Modifier un type de réunion</h4>
+    </div>
+    <div class="card-body">
+        <?= $this->Form->create($typesReunion) ?>
+        <fieldset>
+            <?php
+                echo $this->Form->control('nom_type', ['label' => 'Nom du type']);
+                echo $this->Form->control('description', ['label' => 'Description']);
+            ?>
+        </fieldset>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
+            <?= $this->Form->button('Enregistrer', ['class' => 'btn btn-primary']) ?>
+            <?= $this->Form->postLink('Supprimer', ['action' => 'delete', $typesReunion->id], ['method' => 'delete', 'confirm' => 'Voulez-vous vraiment supprimer ce type de réunion ?', 'class' => 'btn btn-danger']) ?>
+            <?= $this->Html->link('Annuler', ['action' => 'index'], ['class' => 'btn btn-light']) ?>
         </div>
-    </aside>
-    <div class="column column-80">
-        <div class="typesReunions form content">
-            <?= $this->Form->create($typesReunion) ?>
-            <fieldset>
-                <legend><?= __('Edit Types Reunion') ?></legend>
-                <?php
-                    echo $this->Form->control('nom_type');
-                    echo $this->Form->control('description');
-                ?>
-            </fieldset>
-            <?= $this->Form->button(__('Submit')) ?>
-            <?= $this->Form->end() ?>
-        </div>
+        <?= $this->Form->end() ?>
     </div>
 </div>

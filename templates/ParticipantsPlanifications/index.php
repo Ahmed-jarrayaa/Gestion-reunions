@@ -4,37 +4,36 @@
  * @var iterable<\App\Model\Entity\ParticipantsPlanification> $participantsPlanifications
  */
 ?>
-<div class="participantsPlanifications index content">
-    <?= $this->Html->link(__('New Participants Planification'), ['action' => 'add'], ['class' => 'button float-right']) ?>
-    <h3><?= __('Participants Planifications') ?></h3>
+<div class="card" style="max-width:1000px;">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <h4 style="margin:0;">Participants planifications</h4>
+        <a class="btn btn-primary btn-sm" href="<?= $this->Url->build(['action' => 'add']) ?>">+ Nouvelle entrée</a>
+    </div>
     <div class="table-responsive">
         <table>
             <thead>
                 <tr>
                     <th><?= $this->Paginator->sort('id') ?></th>
-                    <th><?= $this->Paginator->sort('id_planification') ?></th>
-                    <th><?= $this->Paginator->sort('id_utilisateur') ?></th>
+                    <th><?= $this->Paginator->sort('id_planification', 'Planification') ?></th>
+                    <th><?= $this->Paginator->sort('id_utilisateur', 'Utilisateur') ?></th>
                     <th><?= $this->Paginator->sort('presence') ?></th>
-                    <th class="actions"><?= __('Actions') ?></th>
+                    <th class="actions">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($participantsPlanifications as $participantsPlanification): ?>
                 <tr>
                     <td><?= $this->Number->format($participantsPlanification->id) ?></td>
-                    <td><?= $this->Number->format($participantsPlanification->id_planification) ?></td>
-                    <td><?= $this->Number->format($participantsPlanification->id_utilisateur) ?></td>
-                    <td><?= h($participantsPlanification->presence) ?></td>
+                    <td><?= isset($participantsPlanification->planification->titre) ? h($participantsPlanification->planification->titre) : $this->Number->format($participantsPlanification->id_planification) ?></td>
+                    <td><?= isset($participantsPlanification->utilisateur->nom) ? h($participantsPlanification->utilisateur->nom . ' (' . $participantsPlanification->utilisateur->email . ')') : $this->Number->format($participantsPlanification->id_utilisateur) ?></td>
+                    <td><?= $participantsPlanification->presence ? 'Oui' : 'Non' ?></td>
                     <td class="actions">
-                        <?= $this->Html->link(__('View'), ['action' => 'view', $participantsPlanification->id]) ?>
-                        <?= $this->Html->link(__('Edit'), ['action' => 'edit', $participantsPlanification->id]) ?>
+                        <?= $this->Html->link('Voir', ['action' => 'view', $participantsPlanification->id], ['class' => 'btn btn-light btn-sm']) ?>
+                        <?= $this->Html->link('Modifier', ['action' => 'edit', $participantsPlanification->id], ['class' => 'btn btn-info btn-sm']) ?>
                         <?= $this->Form->postLink(
-                            __('Delete'),
+                            'Supprimer',
                             ['action' => 'delete', $participantsPlanification->id],
-                            [
-                                'method' => 'delete',
-                                'confirm' => __('Are you sure you want to delete # {0}?', $participantsPlanification->id),
-                            ]
+                            ['method' => 'delete', 'confirm' => 'Voulez-vous vraiment supprimer cette entrée ?', 'class' => 'btn btn-danger btn-sm']
                         ) ?>
                     </td>
                 </tr>
@@ -44,12 +43,12 @@
     </div>
     <div class="paginator">
         <ul class="pagination">
-            <?= $this->Paginator->first('<< ' . __('first')) ?>
-            <?= $this->Paginator->prev('< ' . __('previous')) ?>
+            <?= $this->Paginator->first('<< Premier') ?>
+            <?= $this->Paginator->prev('< Précédent') ?>
             <?= $this->Paginator->numbers() ?>
-            <?= $this->Paginator->next(__('next') . ' >') ?>
-            <?= $this->Paginator->last(__('last') . ' >>') ?>
+            <?= $this->Paginator->next('Suivant >') ?>
+            <?= $this->Paginator->last('Dernier >>') ?>
         </ul>
-        <p><?= $this->Paginator->counter(__('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')) ?></p>
+        <p><?= $this->Paginator->counter('Page {{page}} sur {{pages}}, {{current}} résultat(s) sur {{count}}') ?></p>
     </div>
 </div>
